@@ -1,0 +1,20 @@
+# Core dependencies
+numpy>=1.20.0
+opencv-python>=4.5.0
+opencv-contrib-python>=4.5.0
+
+# For simulation mode (when Hailo hardware is not available)
+pillow>=8.0.0
+matplotlib>=3.3.0
+
+# For visualization and UI
+# PyGObject not listed here - install via apt for Raspberry Pi GTK support
+
+# Logging and utilities
+colorlog>=6.0.0
+tqdm>=4.50.0
+
+# For model conversion
+# hailo-platform should be installed separately from Hailo's package repository
+# tensorflow is used only for model conversion and test mode
+tensorflow>=2.8.0; platform_machine != 'aarch64'
