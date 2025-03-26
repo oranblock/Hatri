@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hat Detection System</title>
+    <link rel="stylesheet" href="../dist/assets/main-B0BCAdHZ.css">
+    
+    <!-- Preload TensorFlow.js from CDN to ensure availability -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@4.10.0/dist/tf-backend-webgl.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-cpu@4.10.0/dist/tf-backend-cpu.min.js"></script>
+    
+    <script>
+        // Check TF.js loaded properly
+        window.addEventListener('DOMContentLoaded', function() {
+            if (window.tf) {
+                console.log('TensorFlow.js preloaded from CDN, version:', window.tf.version.tfjs);
+                document.getElementById('tf-status').textContent = 'TensorFlow.js loaded successfully: v' + window.tf.version.tfjs;
+                document.getElementById('tf-status').style.color = 'green';
+                
+                // Try to init backend
+                window.tf.setBackend('webgl').then(function() {
+                    console.log('WebGL backend initialized successfully');
+                    document.getElementById('backend-status').textContent = 'WebGL backend initialized';
+                    document.getElementById('backend-status').style.color = 'green';
+                }).catch(function(err) {
+                    console.error('WebGL backend failed to initialize:', err);
+                    document.getElementById('backend-status').textContent = 'WebGL failed, falling back to CPU';
+                    document.getElementById('backend-status').style.color = 'orange';
+                    
+                    // Try CPU fallback
+                    window.tf.setBackend('cpu').then(function() {
+                        console.log('CPU backend initialized successfully');
+                    }).catch(function(cpuErr) {
+                        console.error('CPU backend failed too:', cpuErr);
+                        document.getElementById('backend-status').textContent = 'All backends failed!';
+                        document.getElementById('backend-status').style.color = 'red';
+                    });
+                });
+            } else {
+                console.error('Failed to load TensorFlow.js from CDN');
+                document.getElementById('tf-status').textContent = 'Failed to load TensorFlow.js!';
+                document.getElementById('tf-status').style.color = 'red';
+            }
+        });
+    </script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #f0f4f8;
+        }
+        #root {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #3b82f6;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .debug-info {
+            background-color: #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 30px;
+            text-align: left;
+        }
+        .debug-info h3 {
+            margin-top: 0;
+        }
+        .status-item {
+            margin: 10px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div class="loading">
+            <h1>Loading Hat Detection System</h1>
+            <p>Please wait while the AI models are loading...</p>
+            <div class="spinner"></div>
+            
+            <div class="debug-info">
+                <h3>System Information</h3>
+                <div class="status-item">TensorFlow.js: <span id="tf-status">Checking...</span></div>
+                <div class="status-item">Backend: <span id="backend-status">Initializing...</span></div>
+                <div class="status-item">
+                    <div id="error-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="../dist/assets/main-B-cAY5k8.js"></script>
+    <script type="module" src="../dist/assets/main-Cp2h7cNS.js"></script>
+</body>
+</html>

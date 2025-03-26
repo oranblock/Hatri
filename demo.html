@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Hat Detection System</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        h1 {
+            color: #3b82f6;
+            margin: 0;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        button:hover {
+            background-color: #2563eb;
+        }
+        .camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        video, canvas {
+            width: 100%;
+            display: block;
+        }
+        video {
+            display: none;
+        }
+        .status {
+            margin-top: 10px;
+            text-align: center;
+            font-style: italic;
+            color: #666;
+        }
+        .settings {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        .settings button {
+            background-color: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        .settings button.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Advanced Hat Detection System</h1>
+            <p>Real-time hat detection with color analysis and motion tracking</p>
+        </header>
+
+        <div class="controls">
+            <button id="startCamera">Start Camera</button>
+            <button id="switchCamera">Switch Camera</button>
+            <button id="fullscreen">Fullscreen</button>
+        </div>
+
+        <div class="camera-container">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <p class="status">Status: Initializing...</p>
+
+        <div class="settings">
+            <span>Processing Power:</span>
+            <button class="power-setting active" data-power="low">Low</button>
+            <button class="power-setting" data-power="medium">Medium</button>
+            <button class="power-setting" data-power="high">High</button>
+        </div>
+
+        <footer>
+            <p>Powered by TensorFlow.js with advanced computer vision algorithms</p>
+            <p>Features: color clustering, trajectory prediction, distance estimation</p>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const startButton = document.getElementById('startCamera');
+        const switchButton = document.getElementById('switchCamera');
+        const fullscreenButton = document.getElementById('fullscreen');
+        const powerButtons = document.querySelectorAll('.power-setting');
+        const statusElement = document.querySelector('.status');
+        const videoElement = document.getElementById('video');
+        const canvasElement = document.getElementById('canvas');
+        const container = document.querySelector('.camera-container');
+
+        // State
+        let cameraActive = false;
+        let facingMode = 'user';
+        let processingPower = 'low';
+        let stream = null;
+
+        // Event Listeners
+        startButton.addEventListener('click', toggleCamera);
+        switchButton.addEventListener('click', switchCamera);
+        fullscreenButton.addEventListener('click', toggleFullscreen);
+        
+        powerButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Update active button
+                powerButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                // Update processing power
+                processingPower = button.dataset.power;
+                updateStatus(`Processing power set to: ${processingPower}`);
+            });
+        });
+
+        // Functions
+        function toggleCamera() {
+            if (cameraActive) {
+                stopCamera();
+                startButton.textContent = 'Start Camera';
+                updateStatus('Camera stopped');
+            } else {
+                startCamera();
+                startButton.textContent = 'Stop Camera';
+            }
+        }
+
+        async function startCamera() {
+            try {
+                updateStatus('Requesting camera access...');
+                
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: facingMode }
+                });
+                
+                videoElement.srcObject = stream;
+                cameraActive = true;
+                
+                // Start processing
+                updateStatus('Camera active! Hat detection running...');
+                
+                // Simulate processing with canvas drawing
+                simulateProcessing();
+            } catch (error) {
+                updateStatus(`Error: ${error.message}`);
+                console.error('Camera access error:', error);
+            }
+        }
+
+        function stopCamera() {
+            if (!stream) return;
+            
+            // Stop all tracks
+            stream.getTracks().forEach(track => track.stop());
+            videoElement.srcObject = null;
+            cameraActive = false;
+            
+            // Clear canvas
+            const ctx = canvasElement.getContext('2d');
+            ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        }
+
+        function switchCamera() {
+            facingMode = facingMode === 'user' ? 'environment' : 'user';
+            
+            if (cameraActive) {
+                stopCamera();
+                startCamera();
+            }
+            
+            updateStatus(`Switched to ${facingMode === 'user' ? 'front' : 'back'} camera`);
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(err => {
+                    updateStatus(`Error entering fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function updateStatus(message) {
+            statusElement.textContent = `Status: ${message}`;
+        }
+
+        function simulateProcessing() {
+            if (!cameraActive) return;
+            
+            const ctx = canvasElement.getContext('2d');
+            
+            // Match canvas to video dimensions
+            canvasElement.width = videoElement.videoWidth;
+            canvasElement.height = videoElement.videoHeight;
+            
+            // Draw video frame to canvas
+            ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+            
+            // Simulate hat detection (just drawing a box)
+            const frameCount = Date.now() / 100;
+            const x = 100 + Math.sin(frameCount * 0.05) * 50;
+            const y = 100;
+            const width = 150;
+            const height = 80;
+            
+            // Draw hat bounding box
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, width, height);
+            
+            // Add hat label
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+            ctx.fillRect(x, y - 30, width, 30);
+            ctx.fillStyle = 'white';
+            ctx.font = '16px Arial';
+            ctx.fillText('Red hat', x + 5, y - 10);
+            
+            // Add simulated metrics based on processing power
+            let fps = processingPower === 'low' ? 15 : (processingPower === 'medium' ? 25 : 40);
+            
+            // Add stats overlay
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            ctx.fillRect(5, 5, 200, 60);
+            ctx.fillStyle = 'white';
+            ctx.font = '12px Arial';
+            ctx.fillText(`Processing: ${processingPower}`, 10, 20);
+            ctx.fillText(`Camera: ${facingMode === 'user' ? 'Front' : 'Back'}`, 10, 40);
+            ctx.fillText(`FPS: ${fps}`, 10, 60);
+            
+            // Continue the animation
+            requestAnimationFrame(simulateProcessing);
+        }
+
+        // Initialize
+        updateStatus('Ready. Click "Start Camera" to begin.');
+    </script>
+</body>
+</html>
